@@ -8,8 +8,6 @@ from recipes.models import Ingredient
 DATA_PATH = os.path.join(settings.BASE_DIR, 'data')
 INGREDIENTS_DATA = os.path.join(DATA_PATH, 'ingredients.csv')
 
-
-
 class Command(BaseCommand):
     """Импорт ингредиентов из csv файла в базу"""
 
@@ -26,4 +24,3 @@ class Command(BaseCommand):
                         measurement_unit=measurement_unit,
                     )
         self.stdout.write(self.style.SUCCESS('Данные загружены'))
-
