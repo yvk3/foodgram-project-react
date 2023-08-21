@@ -12,4 +12,4 @@ class UserAdmin(admin.ModelAdmin):
 
 @admin.register(Subscription)
 class SubscriptionAdmin(admin.ModelAdmin):
-    list_display = ('id', 'user', 'author',)
+    list_display = ('id', 'user', 'author')
