@@ -16,5 +16,4 @@ class Command(BaseCommand):
             for ingredients in ingredient_data:
                 Ingredient.objects.get_or_create(**ingredients)
 
-        self.stdout.write(self.style.SUCCESS('Данные загружены'))
-
+        self.stdout.write
