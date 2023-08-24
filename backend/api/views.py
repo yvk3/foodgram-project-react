@@ -89,11 +89,11 @@ class UserViewSet(
     def unsubscribe(self, request, pk):
         user = request.user
         author = get_object_or_404(User, pk=pk)
-        Subscription.objects.filter(user=user, author=author).delete()
-        message = {
-            'detail': 'Вы отписались от данного автора.'
-        }
-        return Response(message, status=status.HTTP_204_NO_CONTENT)
+        subscriptions = get_object_or_404(
+            Subscription, user=user, author=author
+        )
+        subscriptions.delete()
+        return Response(status=status.HTTP_204_NO_CONTENT)
 
     @action(
         detail=False,
@@ -167,11 +167,16 @@ class RecipeViewSet(viewsets.ModelViewSet):
     def unfavorite(self, request, pk):
         user = request.user
         recipe = get_object_or_404(Recipe, pk=pk)
-        Favorite.objects.filter(user=user, recipe=recipe).delete()
-        message = {
-            'detail': 'Вы удалили рецепт из избранного.'
-        }
-        return Response(message, status=status.HTTP_204_NO_CONTENT)
+        favorite_recipe = get_object_or_404(
+            Favorite, user=user, recipe=recipe
+        )
+        favorite_recipe.delete()
+        return Response(status=status.HTTP_204_NO_CONTENT)
+        # Favorite.objects.filter(user=user, recipe=recipe).delete()
+        # message = {
+        #     'detail': 'Вы удалили рецепт из избранного.'
+        # }
+        # return Response(message, status=status.HTTP_204_NO_CONTENT)
 
     @action(
         detail=True,
@@ -195,12 +200,11 @@ class RecipeViewSet(viewsets.ModelViewSet):
     def delete_shopping_cart(self, request, pk):
         user = request.user
         recipe = get_object_or_404(Recipe, pk=pk)
-        ShoppingCart.objects.filter(user=user, recipe=recipe).delete()
-        message = {
-            'detail':
-                'Рецепт удалён из корзины.'
-        }
-        return Response(message, status=status.HTTP_204_NO_CONTENT)
+        favorites = get_object_or_404(
+            ShoppingCart, user=user, recipe=recipe
+        )
+        favorites.delete()
+        return Response(status=status.HTTP_204_NO_CONTENT)
 
     @action(
         detail=False,

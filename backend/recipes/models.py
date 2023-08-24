@@ -1,5 +1,6 @@
 from django.db import models
 from django.db.models import Exists, OuterRef
+from django.core import validators
 from users.models import User
 
 
@@ -26,21 +27,35 @@ class Ingredient(models.Model):
 
 
 class Tag(models.Model):
-    """Tag model."""
+    """Тег модель."""
     name = models.CharField(
         max_length=50,
         unique=True,
         verbose_name='Название тега',
+        validators=(
+            validators.MinLengthValidator(
+                1, 'Название не может быть пустым'
+            ),
+        )
     )
     color = models.CharField(
         max_length=7,
         unique=True,
         verbose_name='Цвет тега (HEX code)',
-        help_text='пример, #49B64E',
+        help_text='Цвет тега (HEX code), пример - #49B64E',
+        validators=(
+            validators.RegexValidator(
+                regex="^#([A-Fa-f0-9]{6}|[A-Fa-f0-9]{3})$",
+                message='Проверьте вводимый формат',
+            ),
+        )
     )
     slug = models.SlugField(
         unique=True,
         verbose_name='Слаг тега',
+        validators=(
+            validators.MinLengthValidator(3, 'Не менее трех символов'),
+        )
     )
 
     class Meta:
@@ -108,9 +123,13 @@ class Recipe(models.Model):
         related_name='recipes',
         verbose_name='Тег',
     )
-    cooking_time = models.IntegerField(
+    cooking_time = models.PositiveSmallIntegerField(
         verbose_name='Время приготовления',
         help_text='время приготовления в минутах',
+        validators=(
+            validators.MinValueValidator(
+                1, 'Время приготовления не может быть меньше "1"'),
+        )
     )
     pub_date = models.DateTimeField(
         auto_now_add=True,
@@ -142,8 +161,20 @@ class IngredientAmount(models.Model):
         related_name='ingredients_amount',
         verbose_name='Рецепт',
     )
-    amount = models.IntegerField(
+    amount = models.PositiveSmallIntegerField(
         verbose_name='Количество ингредиента в рецепте',
+        default=1,
+        validators=(
+            validators.MinValueValidator(1, 'Минимальное значение: 1'),
+            validators.MaxValueValidator(9999, 'Максимальное значение: 9999'),
+            validators.RegexValidator(
+                '^[0-9]+$',
+                (
+                    'Количество ингредиента может быть '
+                    'целым числом от 1 до 9999'
+                )
+            ),
+        ),
     )
 
     class Meta:

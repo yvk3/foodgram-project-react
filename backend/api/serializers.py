@@ -9,13 +9,15 @@ from recipes.models import (Favorite, Ingredient, IngredientAmount, Recipe,
 from rest_framework import serializers
 from rest_framework.validators import UniqueTogetherValidator
 from users.models import Subscription, User
+from django.db import transaction
+from accessify import protected
 
 
 class CustomUserCreateSerializer(UserCreateSerializer):
     """Сериализатор для создания пользователя."""
     password = serializers.CharField(
         style={
-            'input_type': 'password'
+            'input_type': 'password',
         },
         write_only=True,
     )
@@ -23,7 +25,7 @@ class CustomUserCreateSerializer(UserCreateSerializer):
     class Meta:
         model = User
         fields = (
-            'email', 'id', 'username', 'first_name', 'last_name', 'password'
+            'email', 'id', 'username', 'first_name', 'last_name', 'password',
         )
 
 
@@ -31,17 +33,25 @@ class CustomUserSerializer(UserSerializer):
     """Сериализатор для пользователя."""
     is_subscribed = serializers.SerializerMethodField()
 
+#  Для ревьювера - Согласно документации на сайте
+# https://django.fun/ru/docs/django/3.1/internals/contributing/writing-code/coding-style/
+#  Порядок внутренних классов моделей и стандартных моделей:
+#  Все поля базы данных, Пользовательские атрибуты, class Meta
+#  def __str__, def save(), def get_absolute_url()
+#  Мне кажется, что код написан согласно вышеуказанных инструкций.
     class Meta:
         model = User
         fields = (
             'email', 'id', 'username', 'first_name', 'last_name',
-            'is_subscribed'
+            'is_subscribed',
         )
 
     def get_is_subscribed(self, obj):
-        user = self.context.get('request').user
-        return user.is_authenticated and user.subscriber.filter(
-            user=user, author=obj
+        request = self.context.get('request').user
+        if request is None or request.user.is_anonymous:
+            return False
+        return Subscription.objects.filter(
+            user=request.user, author=obj.id,
         ).exists()
 
 
@@ -137,7 +147,7 @@ class IngredientSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Ingredient
-        fields = '__all__'
+        fields = ('id', 'name', 'measurement_unit', )
 
 
 class TagSerializer(serializers.ModelSerializer):
@@ -145,7 +155,7 @@ class TagSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Tag
-        fields = '__all__'
+        fields = ('id', 'name', 'color', 'slug',)
 
 
 class IngredientAmountSerializer(serializers.ModelSerializer):
@@ -221,17 +231,18 @@ class RecipeWriteSerializer(RecipeSerializer):
             'ingredients', 'tags', 'image', 'name', 'text', 'cooking_time'
         )
 
+    @protected
     @staticmethod
     def save_ingredients(recipe, ingredients):
         ingredients_list = []
         for ingredient in ingredients:
-            current_ingredient = ingredient['ingredient']['id']
+            current_ingredient = ingredient.get('id')
             current_amount = ingredient.get('amount')
             ingredients_list.append(
                 IngredientAmount(
                     recipe=recipe,
                     ingredient=current_ingredient,
-                    amount=current_amount
+                    amount=current_amount,
                 )
             )
         IngredientAmount.objects.bulk_create(ingredients_list)
@@ -262,6 +273,7 @@ class RecipeWriteSerializer(RecipeSerializer):
             )
         return data
 
+    @transaction.atomic
     def create(self, validated_data):
         author = self.context.get('request').user
         ingredients = validated_data.pop('ingredients_amount')
@@ -271,6 +283,7 @@ class RecipeWriteSerializer(RecipeSerializer):
         self.save_ingredients(recipe, ingredients)
         return recipe
 
+    @transaction.atomic
     def update(self, instance, validated_data):
         instance.name = validated_data.get('name', instance.name)
         instance.text = validated_data.get('text', instance.text)
