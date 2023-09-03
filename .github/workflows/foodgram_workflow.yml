@@ -68,7 +68,6 @@ jobs:
           key: ${{ secrets.SSH_KEY }}
           passphrase: ${{ secrets.SSH_PASSPHRASE }}
           script: |
-            cd infra/
             sudo docker pull ${{ secrets.DOCKER_USERNAME }}/food_backend:latest
             sudo docker pull ${{ secrets.DOCKER_USERNAME }}/food_frontend:latest
             sudo docker compose -f docker-compose.production.yml down
