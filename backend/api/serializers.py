@@ -10,7 +10,6 @@ from rest_framework import serializers
 from rest_framework.validators import UniqueTogetherValidator
 from users.models import Subscription, User
 from django.db import transaction
-from accessify import protected
 
 
 class CustomUserCreateSerializer(UserCreateSerializer):
@@ -33,26 +32,18 @@ class CustomUserSerializer(UserSerializer):
     """Сериализатор для пользователя."""
     is_subscribed = serializers.SerializerMethodField()
 
-#  Для ревьювера - Согласно документации на сайте
-# https://django.fun/ru/docs/django/3.1/internals/contributing/writing-code/coding-style/
-#  Порядок внутренних классов моделей и стандартных моделей:
-#  Все поля базы данных, Пользовательские атрибуты, class Meta
-#  def __str__, def save(), def get_absolute_url()
-#  Мне кажется, что код написан согласно вышеуказанных инструкций.
+    def get_is_subscribed(self, obj):
+        request_user = self.context.get('request').user.id
+        queryset = Subscription.objects.filter(author=obj,
+                                               user=request_user).exists()
+        return queryset
+
     class Meta:
         model = User
         fields = (
             'email', 'id', 'username', 'first_name', 'last_name',
             'is_subscribed',
         )
-
-    def get_is_subscribed(self, obj):
-        request = self.context.get('request').user
-        if request is None or request.user.is_anonymous:
-            return False
-        return Subscription.objects.filter(
-            user=request.user, author=obj.id,
-        ).exists()
 
 
 class SetPasswordSerializer(serializers.Serializer):
@@ -99,13 +90,6 @@ class SubscriptionUserSerializer(CustomUserSerializer):
         read_only=True
     )
 
-    class Meta:
-        model = User
-        fields = (
-            'email', 'id', 'username', 'first_name', 'last_name',
-            'is_subscribed', 'recipes', 'recipes_count'
-        )
-
     def get_recipes(self, obj):
         request = self.context.get('request')
         recipes_limit = request.GET.get('recipes_limit')
@@ -115,20 +99,16 @@ class SubscriptionUserSerializer(CustomUserSerializer):
             recipes = obj.recipes.all()
         return RecipeShortSerializer(recipes, many=True).data
 
+    class Meta:
+        model = User
+        fields = (
+            'email', 'id', 'username', 'first_name', 'last_name',
+            'is_subscribed', 'recipes', 'recipes_count'
+        )
+
 
 class SubscriptionSerializer(CustomUserSerializer):
     """Сериализатор избранного."""
-
-    class Meta:
-        model = Subscription
-        fields = ('user', 'author')
-        validators = [
-            UniqueTogetherValidator(
-                queryset=Subscription.objects.all(),
-                fields=('user', 'author'),
-                message='Вы уже подписаны на данного автора.'
-            )
-        ]
 
     def validate(self, data):
         user = data.get('user')
@@ -140,6 +120,17 @@ class SubscriptionSerializer(CustomUserSerializer):
                 }
             )
         return data
+
+    class Meta:
+        model = Subscription
+        fields = ('user', 'author')
+        validators = [
+            UniqueTogetherValidator(
+                queryset=Subscription.objects.all(),
+                fields=('user', 'author'),
+                message='Вы уже подписаны на данного автора.'
+            )
+        ]
 
 
 class IngredientSerializer(serializers.ModelSerializer):
@@ -225,15 +216,8 @@ class RecipeWriteSerializer(RecipeSerializer):
         queryset=Tag.objects.all()
     )
 
-    class Meta:
-        model = Recipe
-        fields = (
-            'ingredients', 'tags', 'image', 'name', 'text', 'cooking_time'
-        )
-
-    @protected
     @staticmethod
-    def save_ingredients(recipe, ingredients):
+    def __save_ingredients(recipe, ingredients):
         ingredients_list = []
         for ingredient in ingredients:
             current_ingredient = ingredient.get('id')
@@ -301,6 +285,12 @@ class RecipeWriteSerializer(RecipeSerializer):
         self.save_ingredients(recipe, ingredients)
         instance.save()
         return instance
+
+    class Meta:
+        model = Recipe
+        fields = (
+            'ingredients', 'tags', 'image', 'name', 'text', 'cooking_time'
+        )
 
 
 class RecipeShortSerializer(RecipeSerializer):

@@ -51,16 +51,13 @@ class User(AbstractUser):
         verbose_name='Роль пользователя',
     )
 
-    @property
-    def is_guest(self):
+    def __is_guest(self):
         return self.role == self.GUEST
 
-    @property
-    def is_authorized(self):
+    def __is_authorized(self):
         return self.role == self.AUTHORIZED
 
-    @property
-    def is_admin(self):
+    def __is_admin(self):
         return self.role == self.ADMIN or self.is_superuser
 
     class Meta:

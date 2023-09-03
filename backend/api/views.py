@@ -172,11 +172,7 @@ class RecipeViewSet(viewsets.ModelViewSet):
         )
         favorite_recipe.delete()
         return Response(status=status.HTTP_204_NO_CONTENT)
-        # Favorite.objects.filter(user=user, recipe=recipe).delete()
-        # message = {
-        #     'detail': 'Вы удалили рецепт из избранного.'
-        # }
-        # return Response(message, status=status.HTTP_204_NO_CONTENT)
+
 
     @action(
         detail=True,

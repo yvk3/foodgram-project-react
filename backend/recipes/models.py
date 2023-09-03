@@ -1,5 +1,5 @@
 from django.db import models
-from django.db.models import Exists, OuterRef
+from django.db.models import Exists, OuterRef, UniqueConstraint
 from django.core import validators
 from users.models import User
 
@@ -33,10 +33,12 @@ class Tag(models.Model):
         unique=True,
         verbose_name='Название тега',
         validators=(
-            validators.MinLengthValidator(
-                1, 'Название не может быть пустым'
+            validators.RegexValidator(
+                regex=r'[а-яА-Я]',
+                message='Проверьте вводимый формат',
             ),
-        )
+        ),
+        help_text='Название тега, только русские буквы.',
     )
     color = models.CharField(
         max_length=7,
@@ -223,3 +225,9 @@ class ShoppingCart(models.Model):
     class Meta:
         verbose_name = 'Список покупок'
         verbose_name_plural = 'Списки покупок'
+        constraints = [
+            UniqueConstraint(
+                fields=['user', 'recipe'],
+                name='unique_shopingcart'
+            )
+        ]
