@@ -46,7 +46,7 @@ jobs:
         uses: docker/build-push-action@v4
         with:
           push: true
-          context: ./backend
+          context: ./backend/
           tags: ${{ secrets.DOCKER_USERNAME }}/food_backend:latest
       - name: Push frontend to Docker Hub
         uses: docker/build-push-action@v2
