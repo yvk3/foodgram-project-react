@@ -1,6 +1,6 @@
+from django.core import validators
 from django.db import models
 from django.db.models import Exists, OuterRef, UniqueConstraint
-from django.core import validators
 from users.models import User
 
 

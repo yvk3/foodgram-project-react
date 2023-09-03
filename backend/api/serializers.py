@@ -3,13 +3,13 @@ import base64
 from django.contrib.auth.password_validation import validate_password
 from django.core import exceptions
 from django.core.files.base import ContentFile
+from django.db import transaction
 from djoser.serializers import UserCreateSerializer, UserSerializer
 from recipes.models import (Favorite, Ingredient, IngredientAmount, Recipe,
                             ShoppingCart, Tag)
 from rest_framework import serializers
 from rest_framework.validators import UniqueTogetherValidator
 from users.models import Subscription, User
-from django.db import transaction
 
 
 class CustomUserCreateSerializer(UserCreateSerializer):
