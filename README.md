@@ -83,8 +83,8 @@ python manage.py migrate
 ```
 ***- Загрузка отдельных данных об ингредиентах:***
 - загрузка исходной базы ингредиентов из файла формата .csv
-```import_data
-python manage.py 
+```
+python manage.py import_data
 ```
 - загрузка исходной базы ингредиентов из файла формата .json
 ```
@@ -147,3 +147,76 @@ Request:
     "auth_token": "75dc02e6fb349ec4702b7692cff5b8bb3bd6****"
 }
 ```
+
+## Установка проекта на удаленном сервере:
+***- Войти на удалённый сервер:***
+```bash
+ssh <username>@<ip_address>
+```
+
+***-Установить Docker и Docker-compose:***
+  * Установка на [Ubuntu](https://docs.docker.com/engine/install/ubuntu/):
+    ```bash
+    sudo apt-get update
+    sudo apt-get install docker-ce docker-ce-cli containerd.io docker-compose-plugin
+    ```
+  * Проверить корректность установки можно следующей командой:
+    ```bash
+    sudo docker-compose --version
+    ```
+  * Создать директорию для проекта. Создать файл .env ```(touch .env)``` и скопировать на удаленный сервер файлы:
+     ```bach
+     docker-compose.prodaction.yaml
+     default.conf.template
+     ```
+  * Заполнить файл .env:
+     ```bash
+     POSTGRES_USER= # Задаем пользователя для БД.
+     POSTGRES_PASSWORD= # Задаем пароль для БД. 
+     POSTGRES_DB= # Задаем имя для БД.
+     DB_HOST=db
+     DB_PORT=5432
+    ```
+  * В директории проекта выполняем команду:
+    ```bash
+    sudo docker compose -f docker-compose.production.yml up -d
+    ```
+## После успешного деплоя
+
+* Импортировать данные:
+```bash
+sudo docker-compose exec backend python manage.py import_data
+```
+
+* Создать суперпользователя:
+```bash
+sudo docker-compose exec backend python manage.py createsuperuser
+```
+
+## Workflow для обновления проекта на сервере:
+С помощью GitHud Action можно автоматизировать процесс обновления контейнеров после внесения изменений.
+Для этого в репозитории проекта в разделе GitHub Actions Settings/Secrets/Actions прописать Secrets - переменные 
+окружения для доступа к сервисам:
+```
+DOCKER_USERNAME                # имя пользователя в DockerHub
+DOCKER_PASSWORD                # пароль пользователя в DockerHub
+HOST                           # ip_address сервера
+USER                           # имя пользователя
+SSH_KEY                        # приватный ssh-ключ
+PASSPHRASE                     # кодовая фраза (пароль) для ssh-ключа
+
+TELEGRAM_TO                    # id телеграм-аккаунта (можно узнать у @userinfobot, команда /start)
+TELEGRAM_TOKEN                 # токен бота (получить токен можно у @BotFather, /token, имя бота)
+```
+При каждом обновлении проекта в репозитории на GitHub (выполнения команды push) в ветке main будет 
+отрабатываться следующий сценарий:
+- проверка кода на соответствие стандарту PEP8. Если код не соответствует стандарту, дальнейшего обновления не будет.
+- сборка и доставка докер-образов на DockerHub.
+- автоматический деплой обновленного проекта на удаленный сервер.
+- отправка уведомления в Telegram об обновении проекта.
+
+## Автор
+Кузнецов Юрий [GitHub](https://github.com/yvk3);
+
+[Яндекс.Практикум](https://github.com/yandex-praktikum) - фронтенд
+для Foodgram.
