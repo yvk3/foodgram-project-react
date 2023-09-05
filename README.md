@@ -1,6 +1,8 @@
 
-[![.github/workflows/main.yml](https://github.com/yvk3/foodgram-project-react/actions/workflows/main.yml/badge.svg)]
-(https://github.com/yvk3/foodgram-project-react/action/workflows/main.yml)
+[![.github/workflows/foodgram_workflow.yml](https://github.com/yvk3/foodgram-project-react/actions/workflows/foodgram_workflow.yml/badge.svg)](https://github.com/yvk3/foodgram-project-react/action/workflows/foodgram_workflow.yml)
+
+![workflow](https://github.com/yvk3/foodgram-project-react/actions/workflows/foodgram_workflow.yml/badge.svg)  
+
 # praktikum_new_diplom - "Продуктовый помощник."
 
 Cайт Foodgram, «Продуктовый помощник». На этом сайте пользователи смогут публиковать рецепты, 
