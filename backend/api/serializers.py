@@ -33,9 +33,13 @@ class CustomUserSerializer(UserSerializer):
     is_subscribed = serializers.SerializerMethodField()
 
     def get_is_subscribed(self, obj):
-        request_user = self.context.get('request').user
-        return (request_user and request_user.is_authenticated
-                and obj.subscription.filter(user=request_user).exists())
+        request_user = self.context.get('request').user.id
+        queryset = Subscription.objects.filter(author=obj,
+                                               user=request_user).exists()
+        return queryset
+    #    Для Ревьювера.
+    #   Не знаю как реализовать замечание по испоьзованию obj и related_name
+    #   Без изменения модели User. В модели User нет атрибута  subscribtion.
 
     class Meta:
         model = User
