@@ -34,11 +34,10 @@ class CustomUserSerializer(UserSerializer):
 
     def get_is_subscribed(self, obj):
         request_user = self.context.get('request').user.id
-        return(
+        return (
                 request_user and request_user.is_authenticated
-                    and obj.subsription.filter(user=request_user).exists()
+                and obj.subsription.filter(user=request_user).exists()
         )
-
 
     class Meta:
         model = User
@@ -140,7 +139,7 @@ class IngredientSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Ingredient
-        fields = ('id', 'name', 'measurement_unit', )
+        fields = ('id', 'name', 'measurement_unit',)
 
 
 class TagSerializer(serializers.ModelSerializer):
