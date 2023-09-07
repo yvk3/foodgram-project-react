@@ -36,13 +36,6 @@ class CustomUserSerializer(UserSerializer):
         request_user = self.context.get('request').user.id
         queryset = obj.subscribing.filter(user=request_user).exists()
         return queryset
-        # request_user = self.context.get('request').user.id
-        # queryset = Subscription.objects.filter(author=obj,
-        #                                        user=request_user).exists()
-        # return queryset
-    #    Для Ревьювера.
-    #   Не знаю как реализовать замечание по испоьзованию obj и related_name
-    #   Без изменения модели User. В модели User нет атрибута  subscribtion.
 
     class Meta:
         model = User
@@ -297,6 +290,9 @@ class RecipeWriteSerializer(RecipeSerializer):
         fields = (
             'ingredients', 'tags', 'image', 'name', 'text', 'cooking_time'
         )
+
+    # def __save_ingredients(self, recipe, ingredients):
+    #     pass
 
 
 class RecipeShortSerializer(RecipeSerializer):
