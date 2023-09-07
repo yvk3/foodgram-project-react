@@ -294,9 +294,6 @@ class RecipeWriteSerializer(RecipeSerializer):
             'ingredients', 'tags', 'image', 'name', 'text', 'cooking_time'
         )
 
-    # def __save_ingredients(self, recipe, ingredients):
-    #     pass
-
 
 class RecipeShortSerializer(RecipeSerializer):
     """Recipe short Serializer."""

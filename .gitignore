@@ -136,3 +136,4 @@ tutorial-env/
 
 
 .project
+backend/db.sqlite3
