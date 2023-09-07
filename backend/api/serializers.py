@@ -221,7 +221,8 @@ class RecipeWriteSerializer(RecipeSerializer):
         ingredients_list = []
         for ingredient in ingredients:
             logging.warning(ingredient)
-            current_ingredient = ingredient['ingredient']['id']
+            current_ingredient = Ingredient.objects.get(
+                id=ingredient.get('ingredient')['id'])
             current_amount = ingredient.get('amount')
             logging.warning(ingredient)
             ingredients_list.append(
@@ -257,6 +258,11 @@ class RecipeWriteSerializer(RecipeSerializer):
                     'error': 'Ингредиенты не должны повторяться в рецепте.'
                 }
             )
+        all_ingredients = Ingredient.objects.all().values_list(
+            'id', flat=True)
+        if not set(ingredient).issubset(all_ingredients):
+            raise serializers.ValidationError(
+                'Указанного ингредиента не существует')
         return data
 
     @transaction.atomic
