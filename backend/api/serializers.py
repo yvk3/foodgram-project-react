@@ -1,4 +1,5 @@
 import base64
+import logging
 
 from django.contrib.auth.password_validation import validate_password
 from django.core import exceptions
@@ -219,8 +220,10 @@ class RecipeWriteSerializer(RecipeSerializer):
     def __save_ingredients(recipe, ingredients):
         ingredients_list = []
         for ingredient in ingredients:
-            current_ingredient = ingredient.get('id')
+            logging.warning(ingredient)
+            current_ingredient = ingredient['ingredient']['id']
             current_amount = ingredient.get('amount')
+            logging.warning(ingredient)
             ingredients_list.append(
                 IngredientAmount(
                     recipe=recipe,
