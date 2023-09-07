@@ -263,7 +263,7 @@ class RecipeWriteSerializer(RecipeSerializer):
         tags = validated_data.pop('tags')
         recipe = Recipe.objects.create(**validated_data, author=author)
         recipe.tags.add(*tags)
-        self.save_ingredients(recipe, ingredients)
+        self.__save_ingredients(recipe, ingredients)
         return recipe
 
     @transaction.atomic
@@ -281,7 +281,7 @@ class RecipeWriteSerializer(RecipeSerializer):
         instance.tags.add(*tags)
         instance.ingredients.clear()
         recipe = instance
-        self.save_ingredients(recipe, ingredients)
+        self.__save_ingredients(recipe, ingredients)
         instance.save()
         return instance
 
