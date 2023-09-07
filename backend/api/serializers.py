@@ -221,7 +221,7 @@ class RecipeWriteSerializer(RecipeSerializer):
         ingredients_list = []
         for ingredient in ingredients:
             logging.warning(ingredient)
-            current_ingredient = ingredient['ingredient']['id']
+            current_ingredient = ingredient.get('ingredient').get('id')
             current_amount = ingredient.get('amount')
             logging.warning(ingredient)
             ingredients_list.append(
