@@ -69,7 +69,7 @@ class UserViewSet(
 
     @action(
         detail=True,
-        methods=['POST', 'GET'],
+        methods=['POST', 'DELETE'],
         permission_classes=[IsAuthorOrAdminOrReadOnly]
     )
     def subscribe(self, request, pk):
@@ -79,21 +79,19 @@ class UserViewSet(
             'user': user.pk,
             'author': author.pk
         }
-        serializer = SubscriptionSerializer(data=data)
-        serializer.is_valid(raise_exception=True)
-        serializer.save()
-        serializer = self.get_serializer(author)
-        return Response(serializer.data, status=status.HTTP_201_CREATED)
+        if request.metod == 'POST':
+            serializer = SubscriptionSerializer(data=data)
+            serializer.is_valid(raise_exception=True)
+            serializer.save()
+            serializer = self.get_serializer(author)
+            return Response(serializer.data, status=status.HTTP_201_CREATED)
 
-    @subscribe.mapping.delete
-    def unsubscribe(self, request, pk):
-        user = request.user
-        author = get_object_or_404(User, pk=pk)
-        subscriptions = get_object_or_404(
-            Subscription, user=user, author=author
-        )
-        subscriptions.delete()
-        return Response(status=status.HTTP_204_NO_CONTENT)
+        if request.metod == 'DELETE':
+            subscriptions = get_object_or_404(
+                Subscription, user=user, author=author
+            )
+            subscriptions.delete()
+            return Response(status=status.HTTP_204_NO_CONTENT)
 
     @action(
         detail=False,
